@@ -1,3 +1,9 @@
 .venv
 /venv
 */venv
+models/
+venv/
+*.safetensors
+*.ckpt
+*.pt
+__pycache__/
