@@ -1,4 +1,4 @@
-SD_API_URL = "http://127.0.0.1:7860/sdapi/v1/txt2img"
+SD_API_URL = "https://53fa41f17ec0.ngrok-free.app/sdapi/v1/txt2img"
 API_KEY = "sd-portfolio-key"
 
 DEFAULT_STEPS = 20
