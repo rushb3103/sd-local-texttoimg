@@ -1,10 +1,8 @@
-from dataclasses import dataclass
-from typing import Optional
-
-@dataclass
 class Job:
-    id: str
-    prompt: str
-    status: str = "queued"   # queued | running | done | error
-    result: Optional[dict] = None
-    error: Optional[str] = None
+    def __init__(self, id, prompt):
+        self.id = id
+        self.prompt = prompt
+        self.status = "queued"
+        self.progress = 0
+        self.result = None
+        self.error = None
