@@ -11,11 +11,10 @@ from queue_manager import job_queue, job_store
 SD_URL = SD_API_URL
 
 app = Flask(__name__)
-
+app.template_folder = "static"
 # ---------------- WORKER (SAFE BACKGROUND THREAD) ---------------- #
 
 _worker_started = False
-
 def worker_loop():
     while True:
         job = job_queue.get()
@@ -23,30 +22,34 @@ def worker_loop():
             job.status = "running"
             job.progress = 0
 
-            # Example SD txt2img call (replace params as needed)
             payload = {
                 "prompt": job.prompt,
-                "steps": 20,
+                "negative_prompt": "blurry, low quality, bad anatomy, bad hands",
+                "steps": 25,
+                "sampler_name": "DPM++ 2M",
+                "cfg_scale": 7.5,
                 "width": 512,
-                "height": 512
+                "height": 512,
+                "seed": -1,
+                "batch_size": 1,
+                "n_iter": 1,
+                "restore_faces": False,
+                "tiling": False,
+                "enable_hr": False
             }
 
-            requests.post(f"{SD_URL}/sdapi/v1/txt2img", json=payload)
+            # 🔥 ONE call only
+            r = requests.post(
+                f"{SD_URL}/sdapi/v1/txt2img",
+                json=payload,
+                timeout=300
+            ).json()
 
-            # Wait until SD finishes (progress API)
-            while True:
-                p = requests.get(f"{SD_URL}/sdapi/v1/progress").json()
-                job.progress = int(p["progress"] * 100)
-
-                if job.progress >= 100:
-                    break
-
-                time.sleep(1.5)
-
-            # Get final image
-            r = requests.post(f"{SD_URL}/sdapi/v1/txt2img", json=payload).json()
+            # SD is DONE here
             image_base64 = r["images"][0]
+
             job.result = f"data:image/png;base64,{image_base64}"
+            job.progress = 100
             job.status = "done"
 
         except Exception as e:
@@ -134,7 +137,7 @@ def sd_progress():
 @app.route("/api/sd/gpu")
 def sd_gpu():
     m = requests.get(f"{SD_URL}/sdapi/v1/memory").json()
-    cuda = m.get("cuda", {})
+    cuda = m.get("ram", {})
     return jsonify({
         "used": round(cuda.get("used", 0) / 1024, 1),
         "total": round(cuda.get("total", 0) / 1024, 1)

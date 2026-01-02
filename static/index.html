@@ -148,9 +148,10 @@
   let sdTimer = null;
 
   function startSDProgress() {
-    if (sdTimer) return;
+  if (sdTimer) return;
 
-    sdTimer = setInterval(async () => {
+  sdTimer = setInterval(async () => {
+    try {
       const p = await fetch("/api/sd/progress").then(r => r.json());
       const g = await fetch("/api/sd/gpu").then(r => r.json());
 
@@ -166,8 +167,12 @@
         clearInterval(sdTimer);
         sdTimer = null;
       }
-    }, 1500);
-  }
+    } catch (e) {
+      console.warn("SD progress fetch failed:", e);
+    }
+  }, 1500);
+}
+
 
   async function updateQueue() {
     const res = await fetch("/api/queue");
