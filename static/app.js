@@ -1,40 +1,47 @@
-let jobId = null;
-
 async function submitJob() {
   const prompt = document.getElementById("prompt").value;
-  document.getElementById("status").innerText = "Queued...";
+  const status = document.getElementById("status");
+  const img = document.getElementById("result");
+
+  status.innerText = "Submitting...";
+  img.src = "";
 
   const res = await fetch("/api/generate", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-API-KEY": "sd-portfolio-key"
+      "X-API-KEY": "YOUR_API_KEY_HERE"
     },
     body: JSON.stringify({ prompt })
   });
 
   const data = await res.json();
-  jobId = data.job_id;
+  if (!res.ok) {
+    status.innerText = data.error || "Error";
+    return;
+  }
 
-  pollStatus();
+  pollStatus(data.job_id);
 }
 
-async function pollStatus() {
-  const res = await fetch(`/api/status/${jobId}`);
-  const data = await res.json();
+async function pollStatus(jobId) {
+  const status = document.getElementById("status");
+  const img = document.getElementById("result");
 
-  document.getElementById("status").innerText = data.status;
+  const interval = setInterval(async () => {
+    const res = await fetch(`/api/status/${jobId}`);
+    const data = await res.json();
 
-  if (data.status === "done") {
-    document.getElementById("result").src =
-      "data:image/png;base64," + data.result.images[0];
-    return;
-  }
+    status.innerText = data.status;
 
-  if (data.status === "error") {
-    document.getElementById("status").innerText = data.error;
-    return;
-  }
+    if (data.status === "done") {
+      img.src = data.result;
+      clearInterval(interval);
+    }
 
-  setTimeout(pollStatus, 3000);
+    if (data.status === "error") {
+      status.innerText = data.error;
+      clearInterval(interval);
+    }
+  }, 1500);
 }

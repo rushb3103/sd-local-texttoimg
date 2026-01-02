@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>AI Image Generator</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <h1>AI Image Generator</h1>
@@ -13,6 +13,6 @@
   <p id="status"></p>
   <img id="result"/>
 
-  <script src="app.js"></script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

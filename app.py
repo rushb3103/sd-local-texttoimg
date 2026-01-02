@@ -1,26 +1,17 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify
 import uuid
 
 from config import API_KEY
 from models import Job
 from queue_manager import job_queue, job_store
 from worker import start_worker
-import os
-FRONTEND_DIR = "./static"
 
-app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
-app.template_folder = FRONTEND_DIR
-app.static_folder = FRONTEND_DIR
+app = Flask(__name__)
 start_worker()
 
 @app.route("/")
 def ui():
-    # print(BASE_DIR)
-    print(FRONTEND_DIR)
-    # return send_from_directory(app.static_folder, "index.html")
     return render_template("index.html")
-
-
 
 @app.route("/ping")
 def ping():
@@ -31,7 +22,9 @@ def generate():
     if request.headers.get("X-API-KEY") != API_KEY:
         return jsonify({"error": "unauthorized"}), 401
 
-    prompt = request.json.get("prompt", "")
+    data = request.get_json(force=True)
+    prompt = data.get("prompt", "").strip()
+
     if not prompt:
         return jsonify({"error": "prompt required"}), 400
 
