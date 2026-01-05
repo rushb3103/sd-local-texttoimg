@@ -127,12 +127,19 @@ def queue_status():
 @app.route("/api/sd/progress")
 def sd_progress():
     p = requests.get(f"{SD_URL}/sdapi/v1/progress").json()
+
+    preview = None
+    if p.get("current_image"):
+        preview = f"data:image/png;base64,{p['current_image']}"
+
     return jsonify({
         "progress": int(p["progress"] * 100),
         "step": p["state"]["sampling_step"],
         "steps": p["state"]["sampling_steps"],
-        "eta": round(p["eta_relative"], 1)
+        "eta": round(p["eta_relative"], 1),
+        "preview": preview
     })
+
 
 @app.route("/api/sd/gpu")
 def sd_gpu():

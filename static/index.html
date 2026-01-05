@@ -86,6 +86,14 @@
   <div id="gpu"></div>
 </div>
 
+<img id="preview" style="
+  max-width:100%;
+  margin-top:10px;
+  border-radius:6px;
+  display:none;
+">
+
+
 <div class="box">
   <h2>Job Queue</h2>
   <ul id="queue"></ul>
@@ -163,10 +171,18 @@
       document.getElementById("gpu").innerText =
         `GPU VRAM: ${g.used} / ${g.total} MB`;
 
+      // 🔥 LIVE PREVIEW
+      if (p.preview) {
+        const img = document.getElementById("preview");
+        img.src = p.preview;
+        img.style.display = "block";
+      }
+
       if (p.progress >= 100) {
         clearInterval(sdTimer);
         sdTimer = null;
       }
+
     } catch (e) {
       console.warn("SD progress fetch failed:", e);
     }
